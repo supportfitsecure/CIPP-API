@@ -12,6 +12,10 @@ function Invoke-ExecCippFunction {
     [CmdletBinding()]
     param($Request, $TriggerMetadata)
 
+    $APIName = $Request.Params.CIPPEndpoint
+    $Headers = $Request.Headers
+    Write-LogMessage -headers $Headers -API $APIName -message 'Accessed this API' -Sev 'Debug'
+
     $BlockList = @(
         'Get-GraphToken'
         'Get-GraphTokenFromCert'
@@ -28,6 +32,9 @@ function Invoke-ExecCippFunction {
     if (Get-Command -Module CIPPCore -Name $Function -and $BlockList -notcontains $Function) {
         try {
             $Results = & $Function @Params
+            if (!$Results) {
+                $Results = "Function $Function executed successfully"
+            }
             $StatusCode = [HttpStatusCode]::OK
         } catch {
             $Results = $_.Exception.Message
